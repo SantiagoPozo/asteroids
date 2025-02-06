@@ -1,15 +1,15 @@
-import sys
 import pygame
 from constants import *
 from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from shot import Shot
-
+from game_over import game_over  # No se importa main aquí
 
 def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    pygame.display.set_caption("Asteroids")
     clock = pygame.time.Clock()
 
     updatable = pygame.sprite.Group()
@@ -37,8 +37,10 @@ def main():
 
         for asteroid in asteroids:
             if asteroid.collides_with(player):
-                print("Game over!")
-                sys.exit()
+                # Instead of calling main() from game_over,
+                # pass main as a callback to restart the game.
+                game_over(screen, clock, main)
+                return
 
             for shot in shots:
                 if asteroid.collides_with(shot):
@@ -52,9 +54,7 @@ def main():
 
         pygame.display.flip()
 
-        # limit the framerate to 60 FPS
         dt = clock.tick(60) / 1000
-
 
 if __name__ == "__main__":
     main()

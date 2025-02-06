@@ -8,15 +8,37 @@ class Asteroid(CircleShape):
   
     def __init__(self, x, y, radius):
         super().__init__(x, y, radius)
+        self.color = "orange"
+        if radius == ASTEROID_MAX_RADIUS:
+            self.color = "red"
+        elif radius == ASTEROID_MIN_RADIUS:
+            self.color = "yellow"
+        
 
     def draw(self, screen):
-        pygame.draw.circle(screen, "white", self.position, self.radius, 2)
+        width = 6
+        if self.radius == ASTEROID_MIN_RADIUS:
+            width = 0
+        pygame.draw.circle(screen, self.color, self.position, self.radius, width)
+        print("Radius: ", self.radius)
 
     def update(self, dt):
+        # Update the position based on velocity and delta time
         self.position += self.velocity * dt
+
+        # Horizontal wrap-around:
+        if self.position.x > SCREEN_WIDTH + self.radius + 1:
+            self.position.x = -self.radius + 1
+        elif self.position.x < -self.radius - 1:
+            self.position.x = SCREEN_WIDTH + self.radius - 1
+
+        # Vertical wrap-around:
+        if self.position.y > SCREEN_HEIGHT + self.radius + 1:
+            self.position.y = -self.radius + 1
+        elif self.position.y < -self.radius - 1:
+            self.position.y = SCREEN_HEIGHT + self.radius - 1
         
     def split(self):
-
         self.kill()
         if self.radius > ASTEROID_MIN_RADIUS:
             angle = random.uniform(20, 50)
