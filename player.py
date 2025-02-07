@@ -2,7 +2,7 @@ import pygame
 from constants import *
 from circleshape import CircleShape
 from shot import Shot
-
+from game_over import game_over
 
 class Player(CircleShape):
     
@@ -36,6 +36,7 @@ class Player(CircleShape):
             self.rotate(dt)
         if keys[pygame.K_SPACE]:
             return self.shoot()
+
 
     def rotate(self, dt):
         self.rotation += PLAYER_TURN_SPEED * dt

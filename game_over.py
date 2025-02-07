@@ -2,7 +2,7 @@ import pygame
 import sys
 from constants import SCREEN_WIDTH, SCREEN_HEIGHT
 
-def game_over(screen, clock, restart_callback):
+def game_over(screen, clock, restart_callback, score):
     # Create the font for the "Game Over" message
     font = pygame.font.Font(None, 74)
     text = font.render("Game Over!", True, (255, 0, 0))
@@ -10,50 +10,57 @@ def game_over(screen, clock, restart_callback):
 
     # Create the font for the buttons
     button_font = pygame.font.Font(None, 50)
-    button_text = button_font.render("Play Again", True, (255, 255, 255))
-    button_rect = button_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
-
-    button_exit_text = button_font.render("Exit", True, (255, 255, 255))
-    button_exit_rect = button_exit_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 100))
+    play_text_default = "Play Again"
+    exit_text_default = "Exit"
+    play_text = button_font.render(play_text_default, True, (255, 255, 255))
+    play_rect = play_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
+    exit_text = button_font.render(exit_text_default, True, (255, 255, 255))
+    exit_rect = exit_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 50))
+    
+    # Create a font for the score
+    score_font = pygame.font.Font(None, 36)
+    score_text = score_font.render(f"Score: {score}", True, (255, 255, 255))
+    score_rect = score_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 100))
     
     current_cursor = None
 
     while True:
         mouse_pos = pygame.mouse.get_pos()
 
-        desired_cursor = pygame.SYSTEM_CURSOR_HAND if (button_rect.collidepoint(mouse_pos) or button_exit_rect.collidepoint(mouse_pos)) else pygame.SYSTEM_CURSOR_ARROW
+        desired_cursor = pygame.SYSTEM_CURSOR_HAND if (play_rect.collidepoint(mouse_pos) or exit_rect.collidepoint(mouse_pos)) else pygame.SYSTEM_CURSOR_ARROW
         if desired_cursor != current_cursor:
             pygame.mouse.set_cursor(desired_cursor)
             current_cursor = desired_cursor
 
-        if button_rect.collidepoint(mouse_pos):
-            button_text = button_font.render("Play Again", True, (200, 200, 200))
+        # Render buttons with hover effect
+        if play_rect.collidepoint(mouse_pos):
+            play_text = button_font.render(play_text_default, True, (200, 200, 200))
         else:
-            button_text = button_font.render("Play Again", True, (255, 255, 255))
+            play_text = button_font.render(play_text_default, True, (255, 255, 255))
 
-        if button_exit_rect.collidepoint(mouse_pos):
-            button_exit_text = button_font.render("Exit", True, (200, 200, 200))
+        if exit_rect.collidepoint(mouse_pos):
+            exit_text = button_font.render(exit_text_default, True, (200, 200, 200))
         else:
-            button_exit_text = button_font.render("Exit", True, (255, 255, 255))
+            exit_text = button_font.render(exit_text_default, True, (255, 255, 255))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if button_rect.collidepoint(event.pos):
-                    # Call the restart callback passed as parameter
+                if play_rect.collidepoint(event.pos):
                     restart_callback()
                     return
-                if button_exit_rect.collidepoint(event.pos):
+                if exit_rect.collidepoint(event.pos):
                     pygame.quit()
                     sys.exit()
 
         screen.fill("black")
         screen.blit(text, text_rect)
-        pygame.draw.rect(screen, (0, 0, 0), button_rect.inflate(20, 20))
-        screen.blit(button_text, button_rect)
-        pygame.draw.rect(screen, (0, 0, 0), button_exit_rect.inflate(20, 20))
-        screen.blit(button_exit_text, button_exit_rect)
+        # Draw the score text
+        screen.blit(score_text, score_rect)
+        # Draw buttons
+        screen.blit(play_text, play_rect)
+        screen.blit(exit_text, exit_rect)
         pygame.display.flip()
         clock.tick(60)

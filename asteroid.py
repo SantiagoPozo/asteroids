@@ -16,11 +16,13 @@ class Asteroid(CircleShape):
         
 
     def draw(self, screen):
-        width = 6
+        width = 2
+        if self.radius == ASTEROID_MAX_RADIUS:
+            width = 4
         if self.radius == ASTEROID_MIN_RADIUS:
             width = 0
         pygame.draw.circle(screen, self.color, self.position, self.radius, width)
-        print("Radius: ", self.radius)
+        # print("Radius: ", self.radius)
 
     def update(self, dt):
         # Update the position based on velocity and delta time
