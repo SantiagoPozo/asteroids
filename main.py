@@ -5,7 +5,7 @@ from asteroid import Asteroid
 from asteroidfield import AsteroidField
 from shot import Shot
 from game_over import game_over 
-from score import draw_score
+from info_panel import draw_main_info, draw_player_stats
 
 def run_game(screen, clock, max_score):
     # Initialize game-specific variables and sprite groups
@@ -14,16 +14,17 @@ def run_game(screen, clock, max_score):
     asteroids = pygame.sprite.Group()
     shots = pygame.sprite.Group()
 
-    
     Asteroid.containers = (asteroids, updatable, drawable)
     Shot.containers = (shots, updatable, drawable)
-    AsteroidField.containers = updatable
-    asteroid_field = AsteroidField()
     Player.containers = (updatable, drawable)
 
+    asteroid_field = AsteroidField()
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
     score = 0
+    level = 0
+    special_level = 0
+    spawn_special = False
     dt = 0
 
     while True:
@@ -37,21 +38,44 @@ def run_game(screen, clock, max_score):
                     return
 
         updatable.update(dt)
+        spawn_special = asteroid_field.update(dt, level, spawn_special)
 
         for asteroid in asteroids:
             if asteroid.collides_with(player):
-                game_over(screen, clock, lambda: run_game(screen, clock, score), score)
                 if score > max_score:
                     max_score = score
+                game_over(screen, clock, lambda: run_game(screen, clock, max_score), score)
                 return
 
             for shot in shots:
                 if asteroid.collides_with(shot):
-                    score += 200
-                    if asteroid.radius == ASTEROID_MIN_RADIUS:
-                        score += 300
-                    elif asteroid.radius == ASTEROID_MAX_RADIUS:
-                        score += 100
+                    asteroid_field.field_size -= 1
+                    increment = int(asteroid.velocity.length()) + BASE_SCORE[asteroid.radius]
+                    next_level_score = (level + 1) * SCORE_LEVEL_UP
+                    if score < next_level_score <= score + increment:
+                        level += 1
+
+                        if asteroid_field.spawn_period > 0.001:
+                            asteroid_field.spawn_period *= 0.9
+
+                        if level % 3 == 0:
+                            player.powers["explosion"] += 0.01
+                        elif level % 3 == 1:
+                            player.powers["double"] += 0.08
+                        else:
+                            player.range += 1
+
+
+                    next_special_score = (special_level + 1) * SPECIAL_ASTEROID_APPEARS
+                    if score < next_special_score <= score + increment:
+                        special_level += 1
+                        spawn_special = True
+                    
+                    if asteroid.radius == ASTEROID_SPECIAL_RADIUS: 
+                        player.shoot_powerup_timer += SHOOT_POWERUP_DURATION
+                        player.shoot_cooldown = 0.1
+
+                    score += increment
                     shot.kill()
                     asteroid.split()
 
@@ -60,16 +84,17 @@ def run_game(screen, clock, max_score):
         for obj in drawable:
             obj.draw(screen)
 
-        # Draw the score overlay on the top left
-        draw_score(screen, score, "score: ", (10, 10), align="left")
 
-        # For max score, position it so the overlay is fully visible on the right side.
-        draw_score(screen, max_score, "max: ", (SCREEN_WIDTH - 210, 10), align="right")
+        # Draw the main info overlay on the top
+        draw_main_info(screen, score, max_score, level)
 
+        # Draw the player stats overlay on the top right (or wherever you prefer)
+        draw_player_stats(screen, player, asteroid_field)
 
         pygame.display.flip()
 
         dt = clock.tick(60) / 1000
+        
 
 def main():
     pygame.init()
@@ -80,4 +105,5 @@ def main():
     run_game(screen, clock, max_score)
 
 if __name__ == "__main__":
+
     main()

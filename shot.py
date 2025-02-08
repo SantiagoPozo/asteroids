@@ -8,12 +8,8 @@ class Shot(CircleShape):
         super().__init__(x, y, radius)
         self.distance_traveled = 0  # Counter for the distance traveled
         
-        # If no color is provided, choose a random light blue color once.
-        if color is None:
-            colors = ["#ADD8E6", "#B0E0E6", "pink", "white"]
-            self.color = random.choice(colors)
-        else:
-            self.color = color
+
+        self.color = PINK
 
     def draw(self, screen):
         # Draw the shot using the stored self.color

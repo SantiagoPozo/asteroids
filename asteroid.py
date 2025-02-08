@@ -8,18 +8,14 @@ class Asteroid(CircleShape):
   
     def __init__(self, x, y, radius):
         super().__init__(x, y, radius)
-        self.color = "orange"
-        if radius == ASTEROID_MAX_RADIUS:
-            self.color = "red"
-        elif radius == ASTEROID_MIN_RADIUS:
-            self.color = "yellow"
+        self.color = ASTEROIDS_COLORS[radius]
         
 
     def draw(self, screen):
         width = 2
         if self.radius == ASTEROID_MAX_RADIUS:
             width = 4
-        if self.radius == ASTEROID_MIN_RADIUS:
+        if self.radius <= ASTEROID_MIN_RADIUS:
             width = 0
         pygame.draw.circle(screen, self.color, self.position, self.radius, width)
         # print("Radius: ", self.radius)
