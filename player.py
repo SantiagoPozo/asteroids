@@ -16,7 +16,12 @@ class Player(CircleShape):
         self.range = PLAYER_SHOOT_RANGE
         self.powers = {
             "double": 0,
-            "explosion": 0
+            "triple": 0,
+            "explosion": {
+                "prob": 0,
+                "range": 0.5 * PLAYER_SHOOT_RANGE,
+                "num": 3
+            },
         }
 
 
@@ -95,11 +100,13 @@ class Player(CircleShape):
         if self.timer > 0:
             return None
         
-        if random.random() <= self.powers["double"]:
-            return self.double_shoot()
-
-        if random.random() <= self.powers["explosion"]:
+        multiple_shot = random.random()
+        if multiple_shot <= self.powers["explosion"]["prob"]:
             return self.explosion_shoot()
+        elif multiple_shot <= self.powers["triple"]:
+            return self.triple_shoot()
+        elif multiple_shot <= self.powers["double"]:
+            return self.double_shoot()
 
 
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -114,17 +121,40 @@ class Player(CircleShape):
         position = self.position + forward * self.radius
         shot1 = Shot(position.x, position.y, SHOT_RADIUS)
         shot2 = Shot(position.x, position.y, SHOT_RADIUS)
+        shot1.range = 0.8 * self.range
+        shot2.range = 0.8 * self.range
+        shot1.color = PINK2
+        shot2.color = PINK2
         shot1.velocity = forward.rotate(5) * PLAYER_SHOOT_SPEED
         shot2.velocity = forward.rotate(-5) * PLAYER_SHOOT_SPEED
         self.timer = self.shoot_cooldown
         return shot1, shot2
+    
+    def triple_shoot(self):
+        forward = pygame.Vector2(0, 1).rotate(self.rotation)
+        position = self.position + forward * self.radius
+        shot1 = Shot(position.x, position.y, SHOT_RADIUS)
+        shot2 = Shot(position.x, position.y, SHOT_RADIUS)
+        shot3 = Shot(position.x, position.y, SHOT_RADIUS)
+        shot1.range = 0.6 * self.range
+        shot2.range = 0.6 * self.range
+        shot3.range = 0.6 * self.range
+        shot1.color = PINK3
+        shot2.color = PINK3
+        shot3.color = PINK3
+        shot1.velocity = forward.rotate(10) * PLAYER_SHOOT_SPEED
+        shot2.velocity = forward * PLAYER_SHOOT_SPEED
+        shot3.velocity = forward.rotate(-10) * PLAYER_SHOOT_SPEED
+        self.timer = self.shoot_cooldown
+        return shot1, shot2, shot3
 
     def explosion_shoot(self):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
         position = self.position + forward * self.radius
         shots = []
-        for i in range(0, 360, 20):
-            shot = Shot(position.x, position.y, SHOT_RADIUS)
+        r = PLAYER_RADIUS
+        for i in range(0, 360, 360 // self.powers["explosion"]["num"]):
+            shot = Shot(position.x - r // 2, position.y - r // 2 , SHOT_RADIUS)
             shot.velocity = forward.rotate(i) * PLAYER_SHOOT_SPEED
             shots.append(shot)
         self.timer = self.shoot_cooldown

@@ -24,7 +24,6 @@ def run_game(screen, clock, max_score):
     score = 0
     level = 0
     special_level = 0
-    spawn_special = False
     dt = 0
 
     while True:
@@ -38,7 +37,7 @@ def run_game(screen, clock, max_score):
                     return
 
         updatable.update(dt)
-        spawn_special = asteroid_field.update(dt, level, spawn_special)
+        asteroid_field.update(dt)
 
         for asteroid in asteroids:
             if asteroid.collides_with(player):
@@ -57,27 +56,52 @@ def run_game(screen, clock, max_score):
 
                         if asteroid_field.spawn_period > 0.001:
                             asteroid_field.spawn_period *= 0.9
+                        
+                        player.range += 10
 
-                        if level % 3 == 0:
-                            player.powers["explosion"] += 0.01
-                        elif level % 3 == 1:
-                            player.powers["double"] += 0.08
-                        else:
-                            player.range += 1
+
+                        if level == 1:
+                            player.powers["double"] = 4
+                            player.range /= 2
+                            player.shoot_cooldown /= 0.729
+                            player.powers["explosion"]["prob"] = 0.05
+
+                        elif level == 8:
+                            player.powers["double"] = 1
+                            player.powers["explosion"]["prob"] = 0.1
+                            player.powers["explosion"]["num"] = 5
+                        elif level == 12:
+                            player.powers["triple"] = 0.2
+                            player.powers["explosion"]["prob"] = 0.15
+                            player.powers["explosion"]["num"] = 7
+                        elif level == 16:
+                            player.powers["triple"] = 0.4
+                            player.powers["explosion"]["prob"] = 0.2
+                            player.powers["explosion"]["num"] = 11 
+
+                        # if level % 4 == 0:
+                        #     player.powers["double"] += 0.1
+                        # elif level % 4 == 1:
+                        #     player.powers["triple"] += 0.04
+                        # elif level % 4 == 2:
+                        #     player.powers["explosion"]["prob"] += 0.02
+                        # else:
+                        #     player.powers["explosion"]["num"] = min(20, player.powers["explosion"]["num"] + 1)
 
 
                     next_special_score = (special_level + 1) * SPECIAL_ASTEROID_APPEARS
                     if score < next_special_score <= score + increment:
                         special_level += 1
-                        spawn_special = True
                     
                     if asteroid.radius == ASTEROID_SPECIAL_RADIUS: 
                         player.shoot_powerup_timer += SHOOT_POWERUP_DURATION
-                        player.shoot_cooldown = 0.1
+                        player.shoot_cooldown = 0.08
+                        
 
                     score += increment
                     shot.kill()
                     asteroid.split()
+                    break
 
         screen.fill("black")
 

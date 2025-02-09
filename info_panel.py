@@ -29,7 +29,8 @@ def draw_player_stats(screen, player, asteroid_field):
     font = pygame.font.Font(None, 18)
     info = [
         {"name": "Double shot", "value": player.powers["double"], "type": "float"},
-        {"name": "Explosion", "value": player.powers["explosion"], "type": "float"},
+        {"name": "Triple shot", "value": player.powers["triple"], "type": "float"},
+        {"name": "Explosion", "value": player.powers["explosion"]["prob"], "type": "float"},
         {"name": "Player range", "value": player.range, "type": "int"},
         {"name": "Asteroids rate", "value": asteroid_field.spawn_period, "type": "float"},
         {"name": "Field size", "value": asteroid_field.field_size, "type": "int"},

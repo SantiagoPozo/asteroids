@@ -7,9 +7,8 @@ class Shot(CircleShape):
     def __init__(self, x, y, radius, color=None):
         super().__init__(x, y, radius)
         self.distance_traveled = 0  # Counter for the distance traveled
-        
-
         self.color = PINK
+        self.range = PLAYER_SHOOT_RANGE
 
     def draw(self, screen):
         # Draw the shot using the stored self.color
