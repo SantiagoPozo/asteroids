@@ -1,13 +1,12 @@
 import pygame
 from circleshape import CircleShape
 from constants import *
-import random
 
 class Shot(CircleShape):
-    def __init__(self, x, y, radius, color=None):
+    def __init__(self, x, y, radius):
         super().__init__(x, y, radius)
         self.distance_traveled = 0  # Counter for the distance traveled
-        self.color = PINK
+        self.color = RED_RADIOACTIVE
         self.range = PLAYER_SHOOT_RANGE
 
     def draw(self, screen):

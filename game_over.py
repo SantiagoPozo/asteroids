@@ -1,93 +1,54 @@
 import pygame
-import sys
-from constants import SCREEN_WIDTH, SCREEN_HEIGHT
-from info_panel import draw_main_info, draw_player_stats
- 
-def game_over(screen, clock, restart_callback, score):
-    # Create the font for the "Game Over" message
-    font = pygame.font.Font(None, 74)
-    text = font.render("Game Over!", True, (255, 0, 0))
-    text_rect = text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 100))
+from constants import SCREEN_WIDTH, SCREEN_HEIGHT, YELLOW_VENUS
 
-    # Create the font for the buttons
+def render_button(font, label, center, is_selected):
+    """
+    Renders a button label using the provided font.
+    If is_selected is True, the label is rendered in a highlighted color.
+    """
+    color = YELLOW_VENUS if is_selected else (255, 255, 255)
+    surface = font.render(label, True, color)
+    rect = surface.get_rect(center=center)
+    return surface, rect
+
+def draw_game_over_menu(screen, score, selected_button):
+    """
+    Draws the Game Over menu overlay on top of the current background.
+    It displays:
+      - "Game Over!" at the top center.
+      - The player's score.
+      - Two buttons: "Play Again" and "Exit", arranged vertically.
+    The parameter selected_button (0 or 1) indica cuál botón está seleccionado.
+    """
+    # Create fonts
+    main_font = pygame.font.Font(None, 74)
     button_font = pygame.font.Font(None, 50)
-    play_text_default = "Play Again"
-    exit_text_default = "Exit"
-    play_text = button_font.render(play_text_default, True, (255, 255, 255))
-    play_rect = play_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2))
-    exit_text = button_font.render(exit_text_default, True, (255, 255, 255))
-    exit_rect = exit_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 50))
-    
-    # Create the font for the score display
     score_font = pygame.font.Font(None, 36)
+
+    # Render static texts
+    game_over_text = main_font.render("Game Over!", True, (255, 0, 0))
+    game_over_rect = game_over_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 100))
+
     score_text = score_font.render(f"Score: {score}", True, (255, 255, 255))
     score_rect = score_text.get_rect(center=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 100))
-    
-    current_cursor = None
-    # selected_button: 0 = Play, 1 = Exit.
-    selected_button = 0
 
-    # draw the player stats
-    # draw_player_stats(screen)
+    # Define button labels and centers
+    play_label = "Play Again"
+    exit_label = "Exit"
+    play_center = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+    exit_center = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 50)
 
-    # draw the main info
-    # draw_main_info(screen)
+    # Render the buttons based on the current selection
+    play_surface, play_rect = render_button(button_font, play_label, play_center, selected_button == 0)
+    exit_surface, exit_rect = render_button(button_font, exit_label, exit_center, selected_button == 1)
 
-    # Main loop for the game over screen
-    while True:
-        mouse_pos = pygame.mouse.get_pos()
+    # Instead of clearing the entire screen, draw a semi-transparent overlay over the current background
+    overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 150))  # Black with 150 alpha
+    screen.blit(overlay, (0, 0))
 
-        # If mouse is hovering over a button, update selection accordingly
-        if play_rect.collidepoint(mouse_pos):
-            selected_button = 0
-        elif exit_rect.collidepoint(mouse_pos):
-            selected_button = 1
-
-        desired_cursor = pygame.SYSTEM_CURSOR_HAND if (play_rect.collidepoint(mouse_pos) or exit_rect.collidepoint(mouse_pos)) else pygame.SYSTEM_CURSOR_ARROW
-        if desired_cursor != current_cursor:
-            pygame.mouse.set_cursor(desired_cursor)
-            current_cursor = desired_cursor
-        
-        # Draw the game over screen
-        
-
-        # Process keyboard events for navigation
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    selected_button = (selected_button - 1) % 2
-                elif event.key == pygame.K_DOWN:
-                    selected_button = (selected_button + 1) % 2
-                elif event.key in {pygame.K_SPACE, pygame.K_RETURN}:
-                    if selected_button == 0:
-                        restart_callback()
-                        return
-                    elif selected_button == 1:
-                        pygame.quit()
-                        sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if play_rect.collidepoint(event.pos):
-                    restart_callback()
-                    return
-                if exit_rect.collidepoint(event.pos):
-                    pygame.quit()
-                    sys.exit()
-
-        # Render buttons with visual feedback based on keyboard selection
-        if selected_button == 0:
-            play_text = button_font.render(play_text_default, True, (255, 126, 20))
-            exit_text = button_font.render(exit_text_default, True, (255, 255, 255))
-        else:
-            play_text = button_font.render(play_text_default, True, (255, 255, 255))
-            exit_text = button_font.render(exit_text_default, True, (255, 126, 20))
-
-        screen.fill("black")
-        screen.blit(text, text_rect)
-        screen.blit(score_text, score_rect)
-        screen.blit(play_text, play_rect)
-        screen.blit(exit_text, exit_rect)
-        pygame.display.flip()
-        clock.tick(60)
+    # Blit the texts and buttons over the overlay
+    screen.blit(game_over_text, game_over_rect)
+    screen.blit(score_text, score_rect)
+    screen.blit(play_surface, play_rect)
+    screen.blit(exit_surface, exit_rect)

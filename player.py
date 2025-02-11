@@ -1,9 +1,9 @@
 import pygame
-from constants import *
 import random
+from constants import *
 from circleshape import CircleShape
 from shot import Shot
-from game_over import game_over
+from levels import calculate_shoot_cooldown
 
 class Player(CircleShape):
     
@@ -11,7 +11,8 @@ class Player(CircleShape):
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0
         self.timer = 0
-        self.shoot_cooldown = PLAYER_SHOOT_COOLDOWN
+        self.shoot_cooldown = calculate_shoot_cooldown(0)
+        self.shoot_powerup_factor = 1
         self.shoot_powerup_timer = 0
         self.range = PLAYER_SHOOT_RANGE
         self.powers = {
@@ -19,26 +20,28 @@ class Player(CircleShape):
             "triple": 0,
             "explosion": {
                 "prob": 0,
-                "range": 0.5 * PLAYER_SHOOT_RANGE,
-                "num": 3
+                "range": 0.5 * self.range,
+                "num": 0
             },
         }
-
 
 
     def draw(self, screen):
         color = SHIP_COLOR
         width = 1
+        self.shoot_powerup_factor = 1
         if self.shoot_powerup_timer > 0:
             color = RADIOACTIVE_GREEN
+            self.shoot_powerup_factor = 0.5
             width = 0
         pygame.draw.polygon(screen, color, self.ship(), width)
 
     def ship(self):
         points = []
         a = self.rotation
-        r = self.radius
+        r = self.radius * SCREEN_AUMENT
         angle_radius = [
+            (a, 1.3 * r),
             (a, 1.1 * r),
             (a + 100, 0.1 * r),
             (a + 60, 0.6 * r),
@@ -64,7 +67,8 @@ class Player(CircleShape):
             self.shoot_powerup_timer -= dt
             if self.shoot_powerup_timer <= 0:
                 # Power-up expired, restore normal shooting cooldown
-                self.shoot_cooldown = PLAYER_SHOOT_COOLDOWN
+                self.shoot_powerup_factor = 1
+
         if keys[pygame.K_w] or keys[pygame.K_UP]:
             self.move(dt)
         if keys[pygame.K_s] or keys[pygame.K_DOWN]:
@@ -102,18 +106,22 @@ class Player(CircleShape):
         
         multiple_shot = random.random()
         if multiple_shot <= self.powers["explosion"]["prob"]:
-            return self.explosion_shoot()
-        elif multiple_shot <= self.powers["triple"]:
+            self.explosion_shoot()
+
+        if multiple_shot <= self.powers["triple"]:
             return self.triple_shoot()
         elif multiple_shot <= self.powers["double"]:
             return self.double_shoot()
+        else:
+            return self.single_shoot()
 
-
+        
+    def single_shoot(self):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
         position = self.position + forward * self.radius
         shot = Shot(position.x, position.y, SHOT_RADIUS)
         shot.velocity = forward * PLAYER_SHOOT_SPEED
-        self.timer = self.shoot_cooldown
+        self.timer = self.shoot_cooldown * self.shoot_powerup_factor
         return shot
 
     def double_shoot(self):
@@ -127,7 +135,7 @@ class Player(CircleShape):
         shot2.color = PINK2
         shot1.velocity = forward.rotate(5) * PLAYER_SHOOT_SPEED
         shot2.velocity = forward.rotate(-5) * PLAYER_SHOOT_SPEED
-        self.timer = self.shoot_cooldown
+        self.timer = self.shoot_cooldown * self.shoot_powerup_factor
         return shot1, shot2
     
     def triple_shoot(self):
@@ -145,7 +153,7 @@ class Player(CircleShape):
         shot1.velocity = forward.rotate(10) * PLAYER_SHOOT_SPEED
         shot2.velocity = forward * PLAYER_SHOOT_SPEED
         shot3.velocity = forward.rotate(-10) * PLAYER_SHOOT_SPEED
-        self.timer = self.shoot_cooldown
+        self.timer = self.shoot_cooldown * self.shoot_powerup_factor
         return shot1, shot2, shot3
 
     def explosion_shoot(self):
@@ -153,9 +161,19 @@ class Player(CircleShape):
         position = self.position + forward * self.radius
         shots = []
         r = PLAYER_RADIUS
-        for i in range(0, 360, 360 // self.powers["explosion"]["num"]):
+        num = self.powers["explosion"]["num"]
+        angle_width = 180 + 4 * num
+        if num == 1:
+            shot = Shot(position.x, position.y, SHOT_RADIUS)
+            shot.velocity = forward.rotate(180) * PLAYER_SHOOT_SPEED
+            return shot
+
+        angle_step = angle_width // (num - 1)
+
+        for i in range(90 - 2 * num, 271 + 2 * num, angle_step):
             shot = Shot(position.x - r // 2, position.y - r // 2 , SHOT_RADIUS)
             shot.velocity = forward.rotate(i) * PLAYER_SHOOT_SPEED
+            shot.color = PERFECT_YELLOW
             shots.append(shot)
-        self.timer = self.shoot_cooldown
+        self.timer = self.shoot_cooldown * self.shoot_powerup_factor
         return shots

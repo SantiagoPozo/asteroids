@@ -26,9 +26,16 @@ class Asteroid(CircleShape):
 
         # Horizontal wrap-around:
         if self.position.x > SCREEN_WIDTH + self.radius + 1:
+            if self.radius != ASTEROID_SPECIAL_RADIUS:
+                self.position.x = -self.radius + 1
+            else: 
+                self.kill()
             self.position.x = -self.radius + 1
         elif self.position.x < -self.radius - 1:
-            self.position.x = SCREEN_WIDTH + self.radius - 1
+            if self.radius != ASTEROID_SPECIAL_RADIUS:
+                self.position.x = SCREEN_WIDTH + self.radius - 1
+            else: 
+                self.kill()
 
         # Vertical wrap-around:
         if self.position.y > SCREEN_HEIGHT + self.radius + 1:
@@ -47,5 +54,4 @@ class Asteroid(CircleShape):
             a1.velocity = 1.2 * v1
             a2 = Asteroid(self.position.x, self.position.y, new_radius)
             a2.velocity = 1.2 * v2
-        else: 
             return
