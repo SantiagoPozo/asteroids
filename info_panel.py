@@ -43,7 +43,7 @@ def draw_player_stats(screen, player, asteroids_field):
         {"name": "Explosion", "value": player.powers["explosion"]["prob"], "type": "float"},
         {"name": "Player range", "value": player.range, "type": "int"},
         {"name": "Asteroids rate", "value": asteroids_field.spawn_period, "type": "float"},
-        {"name": "Field size", "value": asteroids_field.field_size, "type": "int"},
+        {"name": "Field size", "value": asteroids_field.size, "type": "int"},
         {"name": "Shot Frequency", "value": player.shoot_cooldown, "type": "float"},
     ]
     title = font.render("Player Stats", True, (255, 255, 255))
@@ -69,7 +69,7 @@ def print_stat_line(screen, font, column_width, index, info_item):
     if info_item["type"] == "float":
         value_text = font.render(f"{info_item['value']:.3f}", True, (255, 255, 255))
     elif info_item["type"] == "int":
-        value_text = font.render(f"{info_item['value']}", True, (255, 255, 255))
+        value_text = font.render(f"{int(info_item['value'])}", True, (255, 255, 255))
     name_text_rect = name_text.get_rect(topleft=(10, SCREEN_HEIGHT // 2 - 16 + 16 * index))
     value_text_rect = value_text.get_rect(topleft=(10 + column_width, SCREEN_HEIGHT // 2 - 16 + 16 * index))
     screen.blit(name_text, name_text_rect)

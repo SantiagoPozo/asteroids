@@ -18,9 +18,10 @@ class Game:
             self.high_score = 0
             self.destroyed_asteroids = 0
             self.initialized = True
+            self.asteroids_field_size = 0
 
-    def game_over(self):
-        self.state = "game over"
+    def goto_menu(self):
+        self.state = "menu"
 
     def restart(self):
         self.score = 0
